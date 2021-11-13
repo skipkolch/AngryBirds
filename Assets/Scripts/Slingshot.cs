@@ -7,12 +7,14 @@ public class Slingshot : MonoBehaviour
 {
     [Header("Set in Inspector")] // Заголовок для инспектора
     public GameObject prefabProjectile; // префаб шарика
+    public float velocityMult = 8f;
     
     private GameObject launchPoint; // объект точки запуска
     private GameObject projectile; // объект шарика
     private Vector3 launchPos;
     private bool aimMode;
     private float maxMagnitude;
+    private Rigidbody projectileRigidbody;
     private void Awake()
     {
         Transform launchPointTransform = transform.Find("LaunchPoint");
@@ -27,7 +29,8 @@ public class Slingshot : MonoBehaviour
         aimMode = true; // если игрок нажал на кнопку, то включается режим прилецеливания
         projectile = Instantiate(prefabProjectile); // создать шарик
         projectile.transform.position = launchPos; // поместить шарик в точку спавна
-        projectile.GetComponent<Rigidbody>().isKinematic = true; // сделать его кинематическим
+        projectileRigidbody = projectile.GetComponent<Rigidbody>();
+        projectileRigidbody.isKinematic = true; // сделать его кинематическим
     }
 
     public void Update()
@@ -48,6 +51,15 @@ public class Slingshot : MonoBehaviour
 
         Vector3 projectilePos = launchPos + mouseDelta; // прибавляем вектор к стартовой позиции спавна
         projectile.transform.position = projectilePos; // присваиваем это позицию созданному шарику
+        if (Input.GetMouseButtonUp(0)) // отпускание мышки
+        {
+            aimMode = false;
+            projectileRigidbody.isKinematic = false;
+            projectileRigidbody.velocity = -mouseDelta * velocityMult;
+            FollowingCamera.point = projectile; // передача шарика в слежение камеры
+            projectile = null;
+        }
+        
     }
 
     private void OnMouseEnter()
